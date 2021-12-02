@@ -10,58 +10,73 @@ import (
 	"github.com/yu31/gcron/pkg/expr"
 )
 
-const defaultJobNum = 64
+const defaultTaskNum = 64
 
 type Crontab struct {
-	parser expr.Parser
-	tw     *timewheel.TimeWheel
-	mu     *sync.Mutex
-	jobs   map[string]*timewheel.Timer
+	parser  expr.Parser
+	tw      *timewheel.TimeWheel
+	mu      *sync.Mutex
+	jobs    map[string]*timewheel.Timer
+	chain   Chain
+	wg      *sync.WaitGroup
+	running bool
 }
 
 // New creates an Crontab.
-func New() *Crontab {
-	return &Crontab{
-		parser: expr.Standard,
-		mu:     new(sync.Mutex),
-		tw:     timewheel.Default(),
-		jobs:   make(map[string]*timewheel.Timer, defaultJobNum),
+func New(opts ...Option) *Crontab {
+	wg := new(sync.WaitGroup)
+	c := &Crontab{
+		parser:  expr.Standard,
+		mu:      new(sync.Mutex),
+		tw:      timewheel.Default(),
+		jobs:    make(map[string]*timewheel.Timer, defaultTaskNum),
+		chain:   Chain{chainRecover(), chainWaitGroup(wg)},
+		wg:      wg,
+		running: false,
 	}
-}
-
-func (c *Crontab) WithParser(parser expr.Parser) *Crontab {
-	c.mu.Lock()
-	c.parser = parser
-	c.mu.Unlock()
+	for _, opt := range opts {
+		opt(c)
+	}
 	return c
 }
 
-// Reset do reset the time wheel and jobs.
-func (c *Crontab) Reset() {
-	c.mu.Lock()
-	if len(c.jobs) > 0 {
-		c.tw.Stop()
-		// reset time wheel.
-		c.tw = timewheel.Default()
-		c.jobs = make(map[string]*timewheel.Timer, defaultJobNum)
-	}
-	c.mu.Unlock()
-}
-
-// Start starts the current crontab.
+// Start starts the crontab in its own goroutine
 func (c *Crontab) Start() {
 	c.mu.Lock()
+	if c.running {
+		c.mu.Unlock()
+		return
+	}
+
+	c.running = true
 	c.tw.Start()
 	c.mu.Unlock()
 }
 
-// Stop stops the current crontab and wait until timing exit.
-//
-// If there is any timer's task being running in its own goroutine, Stop does
-// not wait for the task to complete before returning. If the caller needs to
-// know whether the task is completed, it must coordinate with the task explicitly.
+// Stop stops the crontab and wait for all tasks to completed.
 func (c *Crontab) Stop() {
 	c.mu.Lock()
+	if !c.running {
+		c.mu.Unlock()
+		return
+	}
+
+	c.running = false
+	c.tw.Stop()
+	c.mu.Unlock()
+
+	c.wg.Wait()
+}
+
+// ForceStop stop the crontab immediately.
+func (c *Crontab) ForceStop() {
+	c.mu.Lock()
+	if !c.running {
+		c.mu.Unlock()
+		return
+	}
+
+	c.running = false
 	c.tw.Stop()
 	c.mu.Unlock()
 }
@@ -81,6 +96,7 @@ func (c *Crontab) Express(key string, schedule *Express) (err error) {
 	if err != nil {
 		return
 	}
+	schedule.key = key
 	c.add(key, schedule)
 	return
 }
@@ -88,6 +104,7 @@ func (c *Crontab) Express(key string, schedule *Express) (err error) {
 // Interval adds or updates a job to the Crontab to be run on the given schedule Interval.
 // The old job with the key will be stop and delete if exists.
 func (c *Crontab) Interval(key string, schedule *Interval) (err error) {
+	schedule.key = key
 	if schedule.Interval < time.Millisecond {
 		return errors.New("gcron: the interval minimum is 1ms")
 	}
@@ -98,6 +115,7 @@ func (c *Crontab) Interval(key string, schedule *Interval) (err error) {
 // Once adds or updates a job to the Crontab to be run on the given schedule Once.
 // The old job with the key will be stop and delete if exists.
 func (c *Crontab) Once(key string, schedule *Once) (err error) {
+	schedule.key = key
 	c.add(key, schedule)
 	return
 }
@@ -118,7 +136,7 @@ func (c *Crontab) add(key string, schedule Schedule) {
 		old.Close()
 	}
 	// Adds and start the new job.
-	c.jobs[key] = c.tw.Schedule(schedule)
+	c.jobs[key] = c.tw.Schedule(c.chain.Apply(schedule))
 	c.mu.Unlock()
 }
 

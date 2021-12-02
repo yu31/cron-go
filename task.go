@@ -10,9 +10,13 @@ import (
 	"github.com/yu31/gcron/pkg/expr"
 )
 
+type Callback func(ctx context.Context, key string, value interface{}) error
+
 // Schedule used in scheduler.
 type Schedule interface {
 	timewheel.Schedule
+	Context() context.Context // return the context.
+	Err() error               // return non-nil when run error.
 }
 
 // Express represents a periodic task with crontab express.
@@ -31,18 +35,23 @@ type Express struct {
 	// Express is the crontab express specification.
 	Express string
 
-	// Context
-	Context context.Context
+	// Ctx
+	Ctx context.Context
 
 	// Value is the arguments used with callback function.
 	Value interface{}
 
 	// Callback called when job expired.
-	Callback func(ctx context.Context, value interface{})
+	Callback Callback
 
+	// the task key that caller set.
+	key string
+	// the schedule of parse by crontab express.
 	schedule expr.Schedule
 	// running indicates whether the task func is running. 1 => true, 0 => false.
 	running int32
+	// callback error.
+	err error
 }
 
 // Next is called be timewheel.
@@ -64,10 +73,20 @@ func (job *Express) Run() {
 	if !job.Concurrency && !atomic.CompareAndSwapInt32(&job.running, 0, 1) {
 		return
 	}
-	job.Callback(job.Context, job.Value)
+
+	job.err = job.Callback(job.Ctx, job.key, job.Value)
+
 	if !job.Concurrency {
 		atomic.StoreInt32(&job.running, 0)
 	}
+}
+
+func (job *Express) Context() context.Context {
+	return job.Ctx
+}
+
+func (job *Express) Err() error {
+	return job.err
 }
 
 // Interval represents a periodic task with fixed interval
@@ -86,17 +105,21 @@ type Interval struct {
 	// Interval is the time interval between each task.
 	Interval time.Duration
 
-	// Context
-	Context context.Context
+	// Ctx
+	Ctx context.Context
 
 	// Value is the arguments used with callback function.
 	Value interface{}
 
 	// Callback called when job expired.
-	Callback func(ctx context.Context, value interface{})
+	Callback Callback
 
+	// the task key that caller set.
+	key string
 	// running indicates whether the task func is running. 1 => true, 0 => false.
 	running int32
+	// callback error.
+	err error
 }
 
 // Next is called be timewheel.
@@ -118,27 +141,40 @@ func (job *Interval) Run() {
 	if !job.Concurrency && !atomic.CompareAndSwapInt32(&job.running, 0, 1) {
 		return
 	}
-	job.Callback(job.Context, job.Value)
+	job.err = job.Callback(job.Ctx, job.key, job.Value)
 	if !job.Concurrency {
 		atomic.StoreInt32(&job.running, 0)
 	}
 }
 
+func (job *Interval) Context() context.Context {
+	return job.Ctx
+}
+
+func (job *Interval) Err() error {
+	return job.err
+}
+
 // Once used to perform the task at a specified time.
 type Once struct {
+	// Time is the task execute time.
 	Time time.Time
 
-	// Context
-	Context context.Context
+	// Ctx
+	Ctx context.Context
 
 	// Value is the arguments used with callback function.
 	Value interface{}
 
 	// Callback called when job expired.
-	Callback func(ctx context.Context, value interface{})
+	Callback Callback
 
+	// the task key that caller set.
+	key string
 	// done indicates whether the action has been performed.
 	done int32
+	// callback error.
+	err error
 }
 
 // Next is called be timewheel.
@@ -151,5 +187,13 @@ func (job *Once) Next(time.Time) time.Time {
 
 // Run is called by timewheel.
 func (job *Once) Run() {
-	job.Callback(job.Context, job.Value)
+	job.err = job.Callback(job.Ctx, job.key, job.Value)
+}
+
+func (job *Once) Context() context.Context {
+	return job.Ctx
+}
+
+func (job *Once) Err() error {
+	return job.err
 }

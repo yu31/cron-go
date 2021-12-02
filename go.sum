@@ -9,12 +9,16 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/yu31/dqueue v0.0.0-20201222193016-dd941aa76798 h1:sgBcxX+zpPLKP1eBhOQBA8FZ60CeZ5lmDqwmU0GzTNI=
 github.com/yu31/dqueue v0.0.0-20201222193016-dd941aa76798/go.mod h1:zh3MJPNXl2hz2Rk9wZ71Vh4iIwWCAiMNcgfnsnbrskI=
+github.com/yu31/dqueue v0.0.0-20211202061341-3abaa50540de h1:OoysOhSvyZxqbiGxoZlz70G1E0oSQOLhi0PP6Se8fGo=
+github.com/yu31/dqueue v0.0.0-20211202061341-3abaa50540de/go.mod h1:zh3MJPNXl2hz2Rk9wZ71Vh4iIwWCAiMNcgfnsnbrskI=
 github.com/yu31/gostructs v0.0.0-20201217022118-6e9ecbe366b6 h1:iPae+TDDrbQoQJKfjyg+GOj53ijYfi5e4AvM2Mgp+wM=
 github.com/yu31/gostructs v0.0.0-20201217022118-6e9ecbe366b6/go.mod h1:2nxYgIcGxEN5nRc3n3pRusl7ys+oEM14uInKe+WtouQ=
 github.com/yu31/timewheel v0.0.0-20210818155502-58552fca8b6f h1:NTIJIjgNm57uKNrY+XEa2dsMqKjJfv6Ylvf8dNIoz/8=
 github.com/yu31/timewheel v0.0.0-20210818155502-58552fca8b6f/go.mod h1:xILPmuJzXriZoYVFmY8sD+ksmW1Fxe6BpSlDKneSbPI=
 github.com/yu31/timewheel v0.0.0-20211022064639-54f1f5be6f68 h1:usI9saDOh7USqPG7Jt0d/ouuEsEB7h5fzM3uWPJGd6U=
 github.com/yu31/timewheel v0.0.0-20211022064639-54f1f5be6f68/go.mod h1:xILPmuJzXriZoYVFmY8sD+ksmW1Fxe6BpSlDKneSbPI=
+github.com/yu31/timewheel v0.0.0-20211202061604-e74494d280f6 h1:pXRjlNqvoZ7I6DxQzKn+E2/uFD+NQygy7Uz87J9DCks=
+github.com/yu31/timewheel v0.0.0-20211202061604-e74494d280f6/go.mod h1:vmT8M3cuUG5wynOH7voBJcH07hFY0ZNgd5cWEJJbrww=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie2QXMNeKRTHCNY2nXvo=

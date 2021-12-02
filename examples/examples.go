@@ -14,11 +14,12 @@ func main() {
 	defer c.Stop()
 
 	_ = c.Once("once1", &gcron.Once{
-		Time:    time.Now().Add(time.Second),
-		Context: context.Background(),
-		Value:   "1024",
-		Callback: func(ctx context.Context, value interface{}) {
-			fmt.Println("run jod once1,", value, time.Now().String())
+		Time:  time.Now().Add(time.Second),
+		Ctx:   context.Background(),
+		Value: "1024",
+		Callback: func(ctx context.Context, key string, value interface{}) error {
+			fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			return nil
 		},
 	})
 
@@ -27,10 +28,11 @@ func main() {
 		End:         time.Unix(2556144000, 0),
 		Concurrency: false,
 		Express:     "* * * * *",
-		Context:     context.Background(),
+		Ctx:         context.Background(),
 		Value:       nil,
-		Callback: func(ctx context.Context, value interface{}) {
-			fmt.Println("run jod express1,", time.Now().String())
+		Callback: func(ctx context.Context, key string, value interface{}) error {
+			fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			return nil
 		},
 	})
 
@@ -39,10 +41,11 @@ func main() {
 		End:         time.Unix(2556144000, 0),
 		Concurrency: false,
 		Express:     "* * * * *",
-		Context:     context.Background(),
+		Ctx:         context.Background(),
 		Value:       nil,
-		Callback: func(ctx context.Context, value interface{}) {
-			fmt.Println("run jod express2,", time.Now().String())
+		Callback: func(ctx context.Context, key string, value interface{}) error {
+			fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			return nil
 		},
 	})
 
@@ -50,11 +53,12 @@ func main() {
 		Begin:       time.Unix(662688000, 0),
 		End:         time.Unix(2556144000, 0),
 		Concurrency: false,
-		Context:     context.Background(),
+		Ctx:         context.Background(),
 		Interval:    time.Second,
 		Value:       nil,
-		Callback: func(ctx context.Context, value interface{}) {
-			fmt.Println("run jod interval1,", time.Now().String())
+		Callback: func(ctx context.Context, key string, value interface{}) error {
+			fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			return nil
 		},
 	})
 
@@ -62,11 +66,12 @@ func main() {
 		Begin:       time.Unix(662688000, 0),
 		End:         time.Unix(2556144000, 0),
 		Concurrency: false,
-		Context:     context.Background(),
+		Ctx:         context.Background(),
 		Interval:    time.Second * 3,
 		Value:       nil,
-		Callback: func(ctx context.Context, value interface{}) {
-			fmt.Println("run jod interval2,", time.Now().String())
+		Callback: func(ctx context.Context, key string, value interface{}) error {
+			fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			return nil
 		},
 	})
 
