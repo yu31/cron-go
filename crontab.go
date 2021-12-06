@@ -13,26 +13,26 @@ import (
 const defaultTaskNum = 64
 
 type Crontab struct {
-	parser  expr.Parser
-	tw      *timewheel.TimeWheel
-	mu      *sync.Mutex
-	jobs    map[string]*timewheel.Timer
-	chain   Chain
-	wg      *sync.WaitGroup
-	running bool
+	parser   expr.Parser
+	tw       *timewheel.TimeWheel
+	mu       *sync.Mutex
+	jobs     map[string]*timewheel.Timer
+	jobChain JobChain
+	wg       *sync.WaitGroup
+	running  bool
 }
 
 // New creates an Crontab.
 func New(opts ...Option) *Crontab {
 	wg := new(sync.WaitGroup)
 	c := &Crontab{
-		parser:  expr.Standard,
-		mu:      new(sync.Mutex),
-		tw:      timewheel.Default(),
-		jobs:    make(map[string]*timewheel.Timer, defaultTaskNum),
-		chain:   Chain{chainRecover(), chainWaitGroup(wg)},
-		wg:      wg,
-		running: false,
+		parser:   expr.Standard,
+		mu:       new(sync.Mutex),
+		tw:       timewheel.Default(),
+		jobs:     make(map[string]*timewheel.Timer, defaultTaskNum),
+		jobChain: JobChain{chainRecover(), chainWaitGroup(wg)},
+		wg:       wg,
+		running:  false,
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -81,42 +81,39 @@ func (c *Crontab) ForceStop() {
 	c.mu.Unlock()
 }
 
-// Add adds or updates a job to the Crontab to be run on the given Schedule.
+// Schedule adds or updates a job to the Crontab to be run on the given Schedule.
 // The old job with the key will be stop and delete if exists.
-func (c *Crontab) Add(key string, schedule Schedule) (err error) {
-	c.add(key, schedule)
+func (c *Crontab) Schedule(job Job, schedule Schedule) (err error) {
+	c.add(job, schedule)
 	return
 }
 
-// Express adds or updates a job to the Crontab to be run on the given schedule Express.
+// Express adds or updates a job to the Crontab to be run on the given exprSchedule Express.
 // The old job with the key will be stop and delete if exists.
-func (c *Crontab) Express(key string, schedule *Express) (err error) {
+func (c *Crontab) Express(job Job, schedule *Express) (err error) {
 	// Check the crontab express spec and build cron.Schedule.
-	schedule.schedule, err = c.parser.Parse(schedule.Express)
+	schedule.exprSchedule, err = c.parser.Parse(schedule.Express)
 	if err != nil {
 		return
 	}
-	schedule.key = key
-	c.add(key, schedule)
+	c.add(job, schedule)
 	return
 }
 
-// Interval adds or updates a job to the Crontab to be run on the given schedule Interval.
+// Interval adds or updates a job to the Crontab to be run on the given exprSchedule Interval.
 // The old job with the key will be stop and delete if exists.
-func (c *Crontab) Interval(key string, schedule *Interval) (err error) {
-	schedule.key = key
-	if schedule.Interval < time.Millisecond {
-		return errors.New("gcron: the interval minimum is 1ms")
+func (c *Crontab) Interval(job Job, schedule *Interval) (err error) {
+	if schedule.Interval < time.Millisecond*10 {
+		return errors.New("gcron: the interval minimum is 10ms")
 	}
-	c.add(key, schedule)
+	c.add(job, schedule)
 	return
 }
 
-// Once adds or updates a job to the Crontab to be run on the given schedule Once.
+// Once adds or updates a job to the Crontab to be run on the given exprSchedule Once.
 // The old job with the key will be stop and delete if exists.
-func (c *Crontab) Once(key string, schedule *Once) (err error) {
-	schedule.key = key
-	c.add(key, schedule)
+func (c *Crontab) Once(job Job, schedule *Once) (err error) {
+	c.add(job, schedule)
 	return
 }
 
@@ -126,17 +123,18 @@ func (c *Crontab) Remove(key string) (err error) {
 	return
 }
 
-func (c *Crontab) add(key string, schedule Schedule) {
-	if key == "" {
+func (c *Crontab) add(job Job, schedule Schedule) {
+	if job.TaskKey() == "" {
 		panic("gcron: key cannot be empty")
 	}
 	c.mu.Lock()
 	// Stops old job if exists before.
-	if old, ok := c.jobs[key]; ok {
+	if old, ok := c.jobs[job.TaskKey()]; ok {
 		old.Close()
 	}
 	// Adds and start the new job.
-	c.jobs[key] = c.tw.Schedule(c.chain.Apply(schedule))
+	//c.jobs[key] = c.tw.Schedule(c.jobChain.Apply(schedule))
+	c.jobs[job.TaskKey()] = c.tw.ScheduleJob(schedule, c.jobChain.Apply(job))
 	c.mu.Unlock()
 }
 

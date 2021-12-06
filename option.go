@@ -11,8 +11,8 @@ func WithParser(parser expr.Parser) Option {
 	}
 }
 
-func WithWrapper(w ...ScheduleWrapper) Option {
+func WithJobWrapper(w ...JobWrapper) Option {
 	return func(c *Crontab) {
-		c.chain = append(c.chain, w...)
+		c.jobChain = append(c.jobChain, w...)
 	}
 }
