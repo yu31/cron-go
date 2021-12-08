@@ -9,7 +9,7 @@ import (
 
 var secondParser = New(Second | Minute | Hour | Dom | Month | Dow | Descriptor)
 
-func TestRange(t *testing.T) {
+func TestExpr_Range(t *testing.T) {
 	zero := uint64(0)
 	ranges := []struct {
 		expr     string
@@ -57,7 +57,7 @@ func TestRange(t *testing.T) {
 	}
 }
 
-func TestField(t *testing.T) {
+func TestExpr_Field(t *testing.T) {
 	fields := []struct {
 		expr     string
 		min, max uint
@@ -77,7 +77,7 @@ func TestField(t *testing.T) {
 	}
 }
 
-func TestAll(t *testing.T) {
+func TestExpr_All(t *testing.T) {
 	all := []struct {
 		r        bounds
 		expected uint64
@@ -98,7 +98,7 @@ func TestAll(t *testing.T) {
 	}
 }
 
-func TestBits(t *testing.T) {
+func TestExpr_Bits(t *testing.T) {
 	bits := []struct {
 		min, max, step uint
 		expected       uint64
@@ -118,7 +118,7 @@ func TestBits(t *testing.T) {
 	}
 }
 
-func TestParseScheduleErrors(t *testing.T) {
+func TestExpr_ParseScheduleErrors(t *testing.T) {
 	var tests = []struct{ expr, err string }{
 		{"* 5 j * * *", "failed to parse int from"},
 		{"@every Xm", "failed to parse duration"},
@@ -136,7 +136,7 @@ func TestParseScheduleErrors(t *testing.T) {
 	}
 }
 
-func TestParseSchedule(t *testing.T) {
+func TestExpr_ParseSchedule(t *testing.T) {
 	tokyo, _ := time.LoadLocation("Asia/Tokyo")
 	entries := []struct {
 		parser   Parser
@@ -180,7 +180,7 @@ func TestParseSchedule(t *testing.T) {
 	}
 }
 
-func TestNormalizeFields(t *testing.T) {
+func TestExpr_NormalizeFields(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    []string
@@ -214,7 +214,7 @@ func TestNormalizeFields(t *testing.T) {
 	}
 }
 
-func TestNormalizeFields_Errors(t *testing.T) {
+func TestExpr_NormalizeFields_Errors(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   []string
@@ -254,7 +254,7 @@ func TestNormalizeFields_Errors(t *testing.T) {
 	}
 }
 
-func TestStandardSpecSchedule(t *testing.T) {
+func TestExpr_StandardSpecSchedule(t *testing.T) {
 	entries := []struct {
 		expr     string
 		expected Schedule
@@ -292,7 +292,7 @@ func TestStandardSpecSchedule(t *testing.T) {
 	}
 }
 
-func TestNoDescriptorParser(t *testing.T) {
+func TestExpr_NoDescriptorParser(t *testing.T) {
 	parser := New(Minute | Hour)
 	_, err := parser.Parse("@every 1m")
 	if err == nil {

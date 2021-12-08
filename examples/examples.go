@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -9,64 +8,60 @@ import (
 )
 
 func main() {
-	c := gcron.New()
-	c.Start()
-	defer c.Stop()
+	cron := gcron.New()
+	cron.Start()
+	defer cron.Stop()
 
-	_ = c.Once(
+	cron.Submit(
+		"once1",
 		&gcron.Task{
-			Ctx:   context.Background(),
-			Key:   "once1",
 			Value: "1024",
-			Callback: func(ctx context.Context, key string, value interface{}) error {
-				fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			Callback: func(value interface{}) error {
+				fmt.Println("run jod:", "key: once1", "value:", value, time.Now().String())
 				return nil
 			},
 		},
 		&gcron.Once{Time: time.Now().Add(time.Second)},
 	)
 
-	_ = c.Express(
+	cron.Submit(
+		"unix_cron1",
 		&gcron.Task{
-			Ctx:   context.Background(),
-			Key:   "express1",
 			Value: nil,
-			Callback: func(ctx context.Context, key string, value interface{}) error {
-				fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			Callback: func(value interface{}) error {
+				fmt.Println("run jod:", "key: unix_cron1", "value:", value, time.Now().String())
 				return nil
 			},
 		},
-		&gcron.Express{
+		&gcron.UnixCron{
 			Begin:   time.Unix(662688000, 0),
 			End:     time.Unix(2556144000, 0),
 			Express: "* * * * *",
 		},
 	)
 
-	_ = c.Express(
+	cron.Submit(
+		"unix_cron2",
 		&gcron.Task{
-			Ctx:   context.Background(),
-			Key:   "express2",
 			Value: nil,
-			Callback: func(ctx context.Context, key string, value interface{}) error {
-				fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			Callback: func(value interface{}) error {
+				fmt.Println("run jod:", "key: unix_cron2", "value:", value, time.Now().String())
 				return nil
 			},
 		},
-		&gcron.Express{
+		&gcron.UnixCron{
 			Begin:   time.Unix(662688000, 0),
 			End:     time.Unix(2556144000, 0),
 			Express: "* * * * *",
 		},
 	)
 
-	_ = c.Interval(
+	cron.Submit(
+		"interval1",
 		&gcron.Task{
-			Ctx:   context.Background(),
-			Key:   "interval1",
 			Value: nil,
-			Callback: func(ctx context.Context, key string, value interface{}) error {
-				fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			Callback: func(value interface{}) error {
+				fmt.Println("run jod:", "key: interval1", "value:", value, time.Now().String())
 				return nil
 			},
 		},
@@ -77,13 +72,12 @@ func main() {
 		},
 	)
 
-	_ = c.Interval(
+	cron.Submit(
+		"interval2",
 		&gcron.Task{
-			Ctx:   context.Background(),
-			Key:   "interval1",
 			Value: nil,
-			Callback: func(ctx context.Context, key string, value interface{}) error {
-				fmt.Println("run jod:", "key:", key, "value:", value, time.Now().String())
+			Callback: func(value interface{}) error {
+				fmt.Println("run jod:", "key: interval2", "value:", value, time.Now().String())
 				return nil
 			},
 		},

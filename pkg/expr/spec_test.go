@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestActivation(t *testing.T) {
+func TestExpr_Activation(t *testing.T) {
 	tests := []struct {
 		time, spec string
 		expected   bool
@@ -71,7 +71,7 @@ func TestActivation(t *testing.T) {
 	}
 }
 
-func TestNext(t *testing.T) {
+func TestExpr_Next(t *testing.T) {
 	runs := []struct {
 		time, spec string
 		expected   string
@@ -199,7 +199,7 @@ func TestNext(t *testing.T) {
 	}
 }
 
-func TestErrors(t *testing.T) {
+func TestExpr_Errors(t *testing.T) {
 	invalidSpecs := []string{
 		"xyz",
 		"60 0 * * *",
@@ -245,7 +245,7 @@ func getTime(value string) time.Time {
 	panic("could not parse time value " + value)
 }
 
-func TestNextWithTz(t *testing.T) {
+func TestExpr_NextWithTz(t *testing.T) {
 	runs := []struct {
 		time, spec string
 		expected   string
@@ -290,8 +290,7 @@ func getTimeTZ(value string) time.Time {
 	return t
 }
 
-// https://github.com/robfig/cron/issues/144
-func TestSlash0NoHang(t *testing.T) {
+func TestExpr_Slash0NoHang(t *testing.T) {
 	schedule := "TZ=America/New_York 15/0 * * * *"
 	_, err := Standard.Parse(schedule)
 	if err == nil {

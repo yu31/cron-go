@@ -1,6 +1,8 @@
 package gcron
 
 import (
+	"fmt"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -9,13 +11,15 @@ import (
 	"github.com/yu31/gcron/pkg/expr"
 )
 
+type ScheduleFunc = timewheel.ScheduleFunc
+
 // Schedule used in scheduler.
 type Schedule interface {
 	timewheel.Schedule
 }
 
-// Express represents a periodic task with crontab express.
-type Express struct {
+// UnixCron represents a periodic task with standard unix crontab expression.
+type UnixCron struct {
 	// Begin is the start time of the validity period of the job.
 	// Zero means no limited.
 	Begin time.Time
@@ -25,14 +29,23 @@ type Express struct {
 	End time.Time
 
 	// Express is the crontab express specification.
+	// Notice: It will panics if express is invalid.
 	Express string
 
-	// the exprSchedule of parse by crontab express.
-	exprSchedule expr.Schedule
+	once         sync.Once
+	exprSchedule expr.Schedule // the exprSchedule of parse by crontab express.
 }
 
 // Next is called be timewheel.
-func (job *Express) Next(prev time.Time) time.Time {
+func (job *UnixCron) Next(prev time.Time) time.Time {
+	job.once.Do(func() {
+		var err error
+		job.exprSchedule, err = expr.Standard.Parse(job.Express)
+		if err != nil {
+			panic(fmt.Errorf("gcron: parse express error:%v", err))
+		}
+	})
+
 	// End of validity, return Zero.
 	if !job.End.IsZero() && prev.After(job.End) {
 		return time.Time{}

@@ -1,18 +1,18 @@
 package gcron
 
-import "github.com/yu31/gcron/pkg/expr"
-
 // Option represents a modification to the default behavior of a Cron.
-type Option func(c *Crontab)
+type Option func(cron *Crontab)
 
-func WithParser(parser expr.Parser) Option {
-	return func(c *Crontab) {
-		c.parser = parser
+// WithJobWrapper append JobWrapper into jobChain
+func WithJobWrapper(w ...JobWrapper) Option {
+	return func(cron *Crontab) {
+		cron.jobChain = append(cron.jobChain, w...)
 	}
 }
 
-func WithJobWrapper(w ...JobWrapper) Option {
-	return func(c *Crontab) {
-		c.jobChain = append(c.jobChain, w...)
+// WithJobChain overwrite the jobChain.
+func WithJobChain(jobChain JobChain) Option {
+	return func(cron *Crontab) {
+		cron.jobChain = jobChain
 	}
 }
