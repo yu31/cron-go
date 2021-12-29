@@ -2,6 +2,7 @@ package gcron
 
 import (
 	"sync"
+	"time"
 
 	"github.com/yu31/timewheel"
 )
@@ -11,19 +12,22 @@ type Crontab struct {
 	tw       *timewheel.TimeWheel
 	jobs     map[string]*timewheel.Timer
 	jobChain JobChain
+	location *time.Location
 }
 
 // New creates an Crontab.
 func New(opts ...Option) *Crontab {
 	cron := &Crontab{
 		mu:       new(sync.Mutex),
-		tw:       timewheel.Default(),
+		tw:       nil,
 		jobs:     make(map[string]*timewheel.Timer, 64),
 		jobChain: nil,
+		location: time.Local,
 	}
 	for _, opt := range opts {
 		opt(cron)
 	}
+	cron.tw = timewheel.Default(timewheel.WithTimezone(cron.location))
 	return cron
 }
 

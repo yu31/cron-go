@@ -37,7 +37,8 @@ func (s *specSchedule) Next(t time.Time) time.Time {
 	if loc == time.Local {
 		loc = t.Location()
 	}
-	if s.Location != time.Local {
+
+	if s.Location != time.Local && s.Location != t.Location() {
 		t = t.In(s.Location)
 	}
 

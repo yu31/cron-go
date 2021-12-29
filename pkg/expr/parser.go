@@ -76,7 +76,7 @@ func (p Parser) Parse(spec string) (Schedule, error) {
 
 	// Extract timezone if present
 	var loc = time.Local
-	if strings.HasPrefix(spec, "TZ=") || strings.HasPrefix(spec, "CRON_TZ=") {
+	if strings.HasPrefix(spec, "TZ=") {
 		var err error
 		i := strings.Index(spec, " ")
 		eq := strings.Index(spec, "=")
