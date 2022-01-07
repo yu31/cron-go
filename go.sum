@@ -15,6 +15,8 @@ github.com/yu31/timewheel v0.0.0-20211208185859-a4624f96d24a h1:Jwn2VpEgT68nCE0R
 github.com/yu31/timewheel v0.0.0-20211208185859-a4624f96d24a/go.mod h1:vmT8M3cuUG5wynOH7voBJcH07hFY0ZNgd5cWEJJbrww=
 github.com/yu31/timewheel v0.0.0-20211229105155-5e747e8279ff h1:STbdgSuQ9tn7yrALCXF01iv4DUf0aqx2qalI+pWy5J4=
 github.com/yu31/timewheel v0.0.0-20211229105155-5e747e8279ff/go.mod h1:vmT8M3cuUG5wynOH7voBJcH07hFY0ZNgd5cWEJJbrww=
+github.com/yu31/timewheel v0.0.0-20220107040749-6920ac41a711 h1:cgzfeWo5mYo7RjW1/9VPkdHYz+fFv6Ie9GeqcJvQriw=
+github.com/yu31/timewheel v0.0.0-20220107040749-6920ac41a711/go.mod h1:vmT8M3cuUG5wynOH7voBJcH07hFY0ZNgd5cWEJJbrww=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie2QXMNeKRTHCNY2nXvo=
