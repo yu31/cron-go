@@ -54,6 +54,7 @@ func (job *UnixCron) Next(prev time.Time) time.Time {
 	if !job.Begin.IsZero() && prev.Before(job.Begin) {
 		prev = job.Begin
 	}
+
 	return job.exprSchedule.Next(prev)
 }
 
