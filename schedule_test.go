@@ -197,6 +197,54 @@ func TestSchedule_UnixCron2(t *testing.T) {
 	})
 }
 
+func TestSchedule_BeginGreaterThanEnd(t *testing.T) {
+	var err error
+	var begin time.Time
+	var end time.Time
+
+	begin, err = time.Parse("2006-01-02 15:04:05", "2022-01-18 6:00:00")
+	require.Nil(t, err)
+	end, err = time.Parse("2006-01-02 15:04:05", "2022-01-18 5:00:00")
+	require.Nil(t, err)
+
+	begin = begin.In(time.Local)
+	end = end.In(time.Local)
+
+	t.Run("UnixCron", func(t *testing.T) {
+		sch := UnixCron{
+			Begin:        begin,
+			End:          end,
+			Express:      "*/5 * * * *",
+			once:         sync.Once{},
+			exprSchedule: nil,
+		}
+
+		var current time.Time
+		current, err = time.Parse("2006-01-02 15:04:05", "2022-01-18 3:05:00")
+		require.Nil(t, err)
+		current = current.In(time.Local)
+
+		next := sch.Next(current)
+		require.Equal(t, next.String(), time.Time{}.String())
+	})
+
+	t.Run("Interval", func(t *testing.T) {
+		sch := Interval{
+			Begin:    begin,
+			End:      end,
+			Interval: time.Second,
+		}
+
+		var current time.Time
+		current, err = time.Parse("2006-01-02 15:04:05", "2022-01-18 3:05:00")
+		require.Nil(t, err)
+		current = current.In(time.Local)
+
+		next := sch.Next(current)
+		require.Equal(t, next.String(), time.Time{}.String())
+	})
+}
+
 func TestSchedule_Interval(t *testing.T) {
 	var err error
 	var begin time.Time

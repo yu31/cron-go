@@ -47,14 +47,14 @@ func (job *UnixCron) Next(prev time.Time) time.Time {
 	})
 
 	next := job.exprSchedule.Next(prev)
+	// Not valid, advance the previous time to Begin.
+	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
+		next = job.Begin
+	}
 
 	// End of validity, return Zero.
 	if !job.End.IsZero() && job.End.Sub(next) < 0 {
 		return time.Time{}
-	}
-	// Not valid, advance the previous time to Begin.
-	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
-		return job.Begin
 	}
 	return next
 }
@@ -78,13 +78,14 @@ type Interval struct {
 func (job *Interval) Next(prev time.Time) time.Time {
 	next := prev.Add(job.Interval)
 
+	// Not valid, advance the previous time to Begin.
+	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
+		next = job.Begin
+	}
+
 	// End of validity, return Zero.
 	if !job.End.IsZero() && job.End.Sub(next) < 0 {
 		return time.Time{}
-	}
-	// Not valid, advance the previous time to Begin.
-	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
-		return job.Begin
 	}
 	return next
 }
