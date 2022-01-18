@@ -46,16 +46,17 @@ func (job *UnixCron) Next(prev time.Time) time.Time {
 		}
 	})
 
+	next := job.exprSchedule.Next(prev)
+
 	// End of validity, return Zero.
-	if !job.End.IsZero() && prev.After(job.End) {
+	if !job.End.IsZero() && job.End.Sub(next) < 0 {
 		return time.Time{}
 	}
 	// Not valid, advance the previous time to Begin.
-	if !job.Begin.IsZero() && prev.Before(job.Begin) {
-		prev = job.Begin
+	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
+		return job.Begin
 	}
-
-	return job.exprSchedule.Next(prev)
+	return next
 }
 
 // Interval represents a periodic task with fixed interval
@@ -75,15 +76,17 @@ type Interval struct {
 
 // Next is called be timewheel.
 func (job *Interval) Next(prev time.Time) time.Time {
+	next := prev.Add(job.Interval)
+
 	// End of validity, return Zero.
-	if !job.End.IsZero() && prev.After(job.End) {
+	if !job.End.IsZero() && job.End.Sub(next) < 0 {
 		return time.Time{}
 	}
 	// Not valid, advance the previous time to Begin.
-	if !job.Begin.IsZero() && prev.Before(job.Begin) {
-		prev = job.Begin
+	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
+		return job.Begin
 	}
-	return prev.Add(job.Interval)
+	return next
 }
 
 // Once used to perform the task at a specified time.
