@@ -90,8 +90,8 @@ func (job *Interval) Next(prev time.Time) time.Time {
 	return next
 }
 
-// Once used to perform the task at a specified time.
-type Once struct {
+// Appoint used to perform the task at a specified time.
+type Appoint struct {
 	// Time is the task execute time.
 	Time time.Time
 
@@ -100,7 +100,7 @@ type Once struct {
 }
 
 // Next is called be timewheel.
-func (job *Once) Next(time.Time) time.Time {
+func (job *Appoint) Next(time.Time) time.Time {
 	if atomic.CompareAndSwapInt32(&job.done, 0, 1) {
 		return job.Time
 	}

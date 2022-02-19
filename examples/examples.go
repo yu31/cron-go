@@ -21,7 +21,7 @@ func main() {
 				return nil
 			},
 		},
-		&gcron.Once{Time: time.Now().Add(time.Second)},
+		&gcron.Appoint{Time: time.Now().Add(time.Second)},
 	)
 
 	cron.Submit(
