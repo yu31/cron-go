@@ -71,7 +71,7 @@ func WrapJobRecover() JobWrapper {
 // The limit < 0 means no limited.
 // The interval not allowed must be greater than 0.
 func WrapJobRetry(ctx context.Context, limit int64, interval time.Duration) JobWrapper {
-	if interval <= 0 {
+	if limit != 0 && interval <= 0 {
 		panic("gcron: WrapJobRetry: the interval must be greater than 0")
 	}
 
