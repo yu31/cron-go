@@ -69,14 +69,14 @@ func WrapJobRecover() JobWrapper {
 }
 
 // WrapJobRetry implements a JobWrapper to retry Run when any error.
-// The limit <= 0 means no limit.
+// The limit < 0 means no limit.
 // The interval not allowed to be 0.
 func WrapJobRetry(ctx context.Context, limit int64, interval time.Duration) JobWrapper {
-	if limit <= 0 {
+	if limit < 0 {
 		limit = math.MaxInt64
 	}
 	if interval == 0 {
-		panic("gcron: WrapJobRetry: the interval must be greater than 0")
+		panic("gcron: WrapJobRetry: the interval cannot be 0")
 	}
 	return func(job Job) Job {
 		return JobFunc(func() (err error) {
