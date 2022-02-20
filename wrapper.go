@@ -31,9 +31,9 @@ func (jobChain JobChain) Apply(job Job) Job {
 // WrapJobWaitGroup implements a JobWrapper to track the completion of job with sync.WaitGroup.
 func WrapJobWaitGroup(wg *sync.WaitGroup) JobWrapper {
 	return func(job Job) Job {
-		return JobFunc(func() error {
+		return JobFunc(func(ctx context.Context) error {
 			wg.Add(1)
-			err := job.Run()
+			err := job.Run(ctx)
 			wg.Done()
 			return err
 		})
@@ -43,7 +43,7 @@ func WrapJobWaitGroup(wg *sync.WaitGroup) JobWrapper {
 // WrapJobRecover implements a JobWrapper to recover when Job run panics.
 func WrapJobRecover() JobWrapper {
 	return func(job Job) Job {
-		return JobFunc(func() (err error) {
+		return JobFunc(func(ctx context.Context) (err error) {
 			defer func() {
 				if r := recover(); r != nil {
 					var ok bool
@@ -61,7 +61,7 @@ func WrapJobRecover() JobWrapper {
 					println(fmt.Sprintf("%v\n%s", err, string(buf)))
 				}
 			}()
-			err = job.Run()
+			err = job.Run(ctx)
 			return
 		})
 	}
@@ -76,8 +76,8 @@ func WrapJobRetry(ctx context.Context, limit int64, interval time.Duration) JobW
 	}
 
 	return func(job Job) Job {
-		return JobFunc(func() (err error) {
-			if err = job.Run(); err == nil {
+		return JobFunc(func(ctx context.Context) (err error) {
+			if err = job.Run(ctx); err == nil {
 				return
 			}
 			if limit == 0 {
@@ -90,7 +90,7 @@ func WrapJobRetry(ctx context.Context, limit int64, interval time.Duration) JobW
 			for {
 				select {
 				case <-ticker.C:
-					if err = job.Run(); err == nil {
+					if err = job.Run(ctx); err == nil {
 						break LOOP
 					}
 				case <-ctx.Done():
@@ -118,11 +118,11 @@ func WrapJobSkipIfRunning() JobWrapper {
 		// running indicates whether the job func is running. 1 => true, 0 => false.
 		var running int32
 
-		return JobFunc(func() error {
+		return JobFunc(func(ctx context.Context) error {
 			if !atomic.CompareAndSwapInt32(&running, 0, 1) {
 				return nil
 			}
-			err := job.Run()
+			err := job.Run(ctx)
 			atomic.StoreInt32(&running, 0)
 			return err
 		})
@@ -135,9 +135,9 @@ func WrapJobBlockIfRunning() JobWrapper {
 	return func(job Job) Job {
 		var mu sync.Mutex
 
-		return JobFunc(func() error {
+		return JobFunc(func(ctx context.Context) error {
 			mu.Lock()
-			err := job.Run()
+			err := job.Run(ctx)
 			mu.Unlock()
 			return err
 		})

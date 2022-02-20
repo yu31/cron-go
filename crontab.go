@@ -1,6 +1,7 @@
 package gcron
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -53,7 +54,7 @@ func (cron *Crontab) Stop() {
 
 // Submit adds or updates a job to the Crontab to be run on the given Schedule.
 // The old job with the key will be stop and delete if exists.
-func (cron *Crontab) Submit(key string, job Job, schedule Schedule) {
+func (cron *Crontab) Submit(ctx context.Context, key string, job Job, schedule Schedule) {
 	if key == "" {
 		panic("gcron: key cannot be empty")
 	}
@@ -63,7 +64,7 @@ func (cron *Crontab) Submit(key string, job Job, schedule Schedule) {
 		old.Close()
 	}
 	// Adds and start the new job.
-	cron.jobs[key] = cron.tw.ScheduleJob(schedule, cron.jobChain.Apply(job))
+	cron.jobs[key] = cron.tw.ScheduleJob(ctx, schedule, cron.jobChain.Apply(job))
 	cron.mu.Unlock()
 }
 

@@ -1,6 +1,8 @@
 package gcron
 
 import (
+	"context"
+
 	"github.com/yu31/timewheel"
 )
 
@@ -20,9 +22,9 @@ type Task struct {
 	Value interface{}
 
 	// Callback called when job expired.
-	Callback func(value interface{}) error
+	Callback func(ctx context.Context, value interface{}) error
 }
 
-func (task *Task) Run() error {
-	return task.Callback(task.Value)
+func (task *Task) Run(ctx context.Context) error {
+	return task.Callback(ctx, task.Value)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -13,10 +14,11 @@ func main() {
 	defer cron.Stop()
 
 	cron.Submit(
+		context.Background(),
 		"once1",
 		&gcron.Task{
 			Value: "1024",
-			Callback: func(value interface{}) error {
+			Callback: func(ctx context.Context, value interface{}) error {
 				fmt.Println("run jod:", "key: once1", "value:", value, time.Now().String())
 				return nil
 			},
@@ -25,10 +27,11 @@ func main() {
 	)
 
 	cron.Submit(
+		context.Background(),
 		"unix_cron1",
 		&gcron.Task{
 			Value: nil,
-			Callback: func(value interface{}) error {
+			Callback: func(ctx context.Context, value interface{}) error {
 				fmt.Println("run jod:", "key: unix_cron1", "value:", value, time.Now().String())
 				return nil
 			},
@@ -41,10 +44,11 @@ func main() {
 	)
 
 	cron.Submit(
+		context.Background(),
 		"unix_cron2",
 		&gcron.Task{
 			Value: nil,
-			Callback: func(value interface{}) error {
+			Callback: func(ctx context.Context, value interface{}) error {
 				fmt.Println("run jod:", "key: unix_cron2", "value:", value, time.Now().String())
 				return nil
 			},
@@ -57,10 +61,11 @@ func main() {
 	)
 
 	cron.Submit(
+		context.Background(),
 		"interval1",
 		&gcron.Task{
 			Value: nil,
-			Callback: func(value interface{}) error {
+			Callback: func(ctx context.Context, value interface{}) error {
 				fmt.Println("run jod:", "key: interval1", "value:", value, time.Now().String())
 				return nil
 			},
@@ -73,10 +78,11 @@ func main() {
 	)
 
 	cron.Submit(
+		context.Background(),
 		"interval2",
 		&gcron.Task{
 			Value: nil,
-			Callback: func(value interface{}) error {
+			Callback: func(ctx context.Context, value interface{}) error {
 				fmt.Println("run jod:", "key: interval2", "value:", value, time.Now().String())
 				return nil
 			},
