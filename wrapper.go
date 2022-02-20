@@ -75,8 +75,8 @@ func WrapJobRetry(ctx context.Context, limit int64, interval time.Duration) JobW
 	if limit < 0 {
 		limit = math.MaxInt64
 	}
-	if interval == 0 {
-		panic("gcron: WrapJobRetry: the interval cannot be 0")
+	if interval <= 0 {
+		panic("gcron: WrapJobRetry: the interval must be greater than 0")
 	}
 	return func(job Job) Job {
 		return JobFunc(func() (err error) {
