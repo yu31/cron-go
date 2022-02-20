@@ -3,7 +3,6 @@ package gcron
 import (
 	"context"
 	"fmt"
-	"math"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -69,33 +68,40 @@ func WrapJobRecover() JobWrapper {
 }
 
 // WrapJobRetry implements a JobWrapper to retry Run when any error.
-// The limit < 0 means no limit.
-// The interval not allowed to be 0.
+// The limit < 0 means no limited.
+// The interval not allowed must be greater than 0.
 func WrapJobRetry(ctx context.Context, limit int64, interval time.Duration) JobWrapper {
-	if limit < 0 {
-		limit = math.MaxInt64
-	}
 	if interval <= 0 {
 		panic("gcron: WrapJobRetry: the interval must be greater than 0")
 	}
+
 	return func(job Job) Job {
 		return JobFunc(func() (err error) {
 			if err = job.Run(); err == nil {
 				return
 			}
-			if limit <= 0 {
+			if limit == 0 {
 				return
 			}
 
 			ticker := time.NewTicker(interval)
+			i := int64(0)
 		LOOP:
-			for i := int64(0); i < limit; i++ {
+			for {
 				select {
 				case <-ticker.C:
 					if err = job.Run(); err == nil {
 						break LOOP
 					}
 				case <-ctx.Done():
+					break LOOP
+				}
+				if limit < 0 {
+					// The `limit` < 0 means no retry limited.
+					continue LOOP
+				}
+				i++
+				if i >= limit {
 					break LOOP
 				}
 			}
