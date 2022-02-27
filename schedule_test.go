@@ -1,6 +1,7 @@
 package gcron
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -46,7 +47,7 @@ func TestSchedule_UnixCron1(t *testing.T) {
 		current = current.In(time.Local)
 
 		next := sch.Next(current)
-		require.Equal(t, next.String(), begin.String())
+		require.Equal(t, next.String(), begin.Add(time.Minute*5).String())
 	})
 	t.Run("TestBegin2", func(t *testing.T) {
 		var current time.Time
@@ -55,7 +56,7 @@ func TestSchedule_UnixCron1(t *testing.T) {
 		current = current.In(time.Local)
 
 		next := sch.Next(current)
-		require.Equal(t, next.String(), begin.String())
+		require.Equal(t, next.String(), begin.Add(time.Minute*5).String())
 	})
 	t.Run("TestBegin3", func(t *testing.T) {
 		var current time.Time
@@ -64,7 +65,7 @@ func TestSchedule_UnixCron1(t *testing.T) {
 		current = current.In(time.Local)
 
 		next := sch.Next(current)
-		require.Equal(t, next.String(), begin.String())
+		require.Equal(t, next.String(), begin.Add(time.Minute*5).String())
 	})
 
 	t.Run("TestEnd1", func(t *testing.T) {
@@ -197,6 +198,49 @@ func TestSchedule_UnixCron2(t *testing.T) {
 	})
 }
 
+// TestSchedule_UnixCron3 for test next time before `Begin` time,
+func TestSchedule_UnixCron3(t *testing.T) {
+	// Time string is UTC.
+	beginTimeSeeds := map[string]time.Duration{
+		"2022-01-18 3:05:00": time.Minute * 5,
+		"2022-01-18 3:05:01": time.Minute*5 - time.Second,
+		"2022-01-18 3:06:00": time.Minute * 4,
+	}
+
+	// Time string is UTC.
+	currentTimeSeeds := []string{
+		"1997-01-18 3:00:00",
+		"2022-01-18 2:00:00",
+		"2022-01-18 2:56:00",
+		"2022-01-18 3:00:00",
+		"2022-01-18 3:04:00",
+		"2022-01-18 3:05:00",
+		"2022-01-18 3:05:01",
+		"2022-01-18 3:09:55",
+	}
+
+	for beginTimeStr, delay := range beginTimeSeeds {
+		begin, err := time.Parse("2006-01-02 15:04:05", beginTimeStr)
+		require.Nil(t, err)
+		begin = begin.In(time.Local)
+		sch := UnixCron{
+			Begin:        begin,
+			End:          time.Time{},
+			Express:      "*/5 * * * *",
+			once:         sync.Once{},
+			exprSchedule: nil,
+		}
+		for _, currentTimeStr := range currentTimeSeeds {
+			current, err := time.Parse("2006-01-02 15:04:05", currentTimeStr)
+			require.Nil(t, err)
+			current = current.In(time.Local)
+			next := sch.Next(current)
+			msg := fmt.Sprintf("beging: %s, current: %s", beginTimeStr, currentTimeStr)
+			require.Equal(t, next.String(), begin.Add(delay).String(), msg)
+		}
+	}
+}
+
 func TestSchedule_BeginGreaterThanEnd(t *testing.T) {
 	var err error
 	var begin time.Time
@@ -245,7 +289,7 @@ func TestSchedule_BeginGreaterThanEnd(t *testing.T) {
 	})
 }
 
-func TestSchedule_Interval(t *testing.T) {
+func TestSchedule_Interval1(t *testing.T) {
 	var err error
 	var begin time.Time
 	var end time.Time
@@ -281,7 +325,7 @@ func TestSchedule_Interval(t *testing.T) {
 		current = current.In(time.Local)
 
 		next := sch.Next(current)
-		require.Equal(t, next.String(), begin.String())
+		require.Equal(t, next.String(), begin.Add(sch.Interval).String())
 	})
 	t.Run("TestBegin2", func(t *testing.T) {
 		var current time.Time
@@ -290,7 +334,7 @@ func TestSchedule_Interval(t *testing.T) {
 		current = current.In(time.Local)
 
 		next := sch.Next(current)
-		require.Equal(t, next.String(), begin.String())
+		require.Equal(t, next.String(), begin.Add(sch.Interval).String())
 	})
 	t.Run("TestBegin3", func(t *testing.T) {
 		var current time.Time
@@ -299,7 +343,7 @@ func TestSchedule_Interval(t *testing.T) {
 		current = current.In(time.Local)
 
 		next := sch.Next(current)
-		require.Equal(t, next.String(), begin.String())
+		require.Equal(t, next.String(), begin.Add(sch.Interval).String())
 	})
 
 	t.Run("TestEnd1", func(t *testing.T) {
@@ -350,4 +394,35 @@ func TestSchedule_Interval(t *testing.T) {
 		}
 		require.Equal(t, last.String(), end.String())
 	})
+}
+
+func TestSchedule_Interval2(t *testing.T) {
+	var err error
+	var begin time.Time
+
+	begin, err = time.Parse("2006-01-02 15:04:05", "2022-01-18 3:00:00")
+	require.Nil(t, err)
+	begin = begin.In(time.Local)
+
+	sch := Interval{
+		Begin:    begin,
+		End:      time.Time{},
+		Interval: time.Minute,
+	}
+
+	seedTimes := []string{
+		"2022-01-18 2:05:00",
+		"2022-01-18 2:55:01",
+		"2022-01-18 3:00:00",
+	}
+
+	var current time.Time
+	for _, timeStr := range seedTimes {
+		current, err = time.Parse("2006-01-02 15:04:05", timeStr)
+		require.Nil(t, err)
+		current = current.In(time.Local)
+
+		next := sch.Next(current)
+		require.Equal(t, next.String(), begin.Add(sch.Interval).String())
+	}
 }

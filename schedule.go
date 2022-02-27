@@ -46,10 +46,13 @@ func (job *UnixCron) Next(prev time.Time) time.Time {
 		}
 	})
 
-	next := job.exprSchedule.Next(prev)
-	// Not valid, advance the previous time to Begin.
-	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
-		next = job.Begin
+	var next time.Time
+
+	// The next time before Begin time. Push the next time after Begin time.
+	if !job.Begin.IsZero() && job.Begin.Sub(prev) > 0 {
+		next = job.exprSchedule.Next(job.Begin)
+	} else {
+		next = job.exprSchedule.Next(prev)
 	}
 
 	// End of validity, return Zero.
@@ -76,11 +79,13 @@ type Interval struct {
 
 // Next is called be timewheel.
 func (job *Interval) Next(prev time.Time) time.Time {
-	next := prev.Add(job.Interval)
+	var next time.Time
 
-	// Not valid, advance the previous time to Begin.
-	if !job.Begin.IsZero() && job.Begin.Sub(next) > 0 {
-		next = job.Begin
+	// The next time before Begin time. Push the next time after Begin time.
+	if !job.Begin.IsZero() && job.Begin.Sub(prev) > 0 {
+		next = job.Begin.Add(job.Interval)
+	} else {
+		next = prev.Add(job.Interval)
 	}
 
 	// End of validity, return Zero.
