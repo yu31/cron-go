@@ -1,5 +1,5 @@
-# gcron
-A crontab library for GoLang
+# cron-go
+An crontab library for GoLang
 
 
 References:

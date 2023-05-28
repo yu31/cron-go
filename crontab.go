@@ -1,11 +1,11 @@
-package gcron
+package cron
 
 import (
 	"context"
 	"sync"
 	"time"
 
-	"github.com/yu31/timewheel"
+	"github.com/yu31/timewheel-go"
 )
 
 type Crontab struct {
@@ -16,7 +16,7 @@ type Crontab struct {
 	location *time.Location
 }
 
-// New creates an Crontab.
+// New creates a Crontab.
 func New(opts ...Option) *Crontab {
 	cron := &Crontab{
 		mu:       new(sync.Mutex),
@@ -53,7 +53,7 @@ func (cron *Crontab) Stop() {
 }
 
 // Submit adds or updates a job to the Crontab to be run on the given Schedule.
-// The old job with the key will be stop and delete if exists.
+// The old job with the key will be stopped and delete if exists.
 func (cron *Crontab) Submit(ctx context.Context, key string, job Job, schedule Schedule) {
 	if key == "" {
 		panic("gcron: key cannot be empty")

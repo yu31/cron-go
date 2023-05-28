@@ -1,9 +1,9 @@
-package gcron
+package cron
 
 import (
 	"context"
 
-	"github.com/yu31/timewheel"
+	"github.com/yu31/timewheel-go"
 )
 
 var (

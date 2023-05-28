@@ -1,4 +1,4 @@
-package gcron
+package cron
 
 import (
 	"fmt"
@@ -6,9 +6,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/yu31/timewheel"
+	"github.com/yu31/timewheel-go"
 
-	"github.com/yu31/gcron/pkg/expr"
+	"github.com/yu31/cron-go/pkg/expr"
 )
 
 type ScheduleFunc = timewheel.ScheduleFunc

@@ -1,4 +1,4 @@
-package gcron
+package cron
 
 import (
 	"context"
