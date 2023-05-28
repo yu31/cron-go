@@ -42,7 +42,7 @@ func (job *UnixCron) Next(prev time.Time) time.Time {
 		var err error
 		job.exprSchedule, err = expr.Standard.Parse(job.Express)
 		if err != nil {
-			panic(fmt.Errorf("gcron: parse express error:%v", err))
+			panic(fmt.Errorf("cron: parse express error:%v", err))
 		}
 	})
 

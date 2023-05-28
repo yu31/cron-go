@@ -56,7 +56,7 @@ func (cron *Crontab) Stop() {
 // The old job with the key will be stopped and delete if exists.
 func (cron *Crontab) Submit(ctx context.Context, key string, job Job, schedule Schedule) {
 	if key == "" {
-		panic("gcron: key cannot be empty")
+		panic("cron: key cannot be empty")
 	}
 	cron.mu.Lock()
 	// Stops old job if exists before.

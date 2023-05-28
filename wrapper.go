@@ -51,7 +51,7 @@ func WrapJobRecover() JobWrapper {
 					if !ok {
 						err = fmt.Errorf("%v", r)
 					}
-					err = fmt.Errorf("gcron: job run panic with error: %v", err)
+					err = fmt.Errorf("cron: job run panic with error: %v", err)
 
 					const size = 64 << 10
 					buf := make([]byte, size)
@@ -72,7 +72,7 @@ func WrapJobRecover() JobWrapper {
 // The interval not allowed must be greater than 0.
 func WrapJobRetry(ctxRetry context.Context, limit int64, interval time.Duration) JobWrapper {
 	if limit != 0 && interval <= 0 {
-		panic("gcron: WrapJobRetry: the interval must be greater than 0")
+		panic("cron: WrapJobRetry: the interval must be greater than 0")
 	}
 
 	return func(job Job) Job {
